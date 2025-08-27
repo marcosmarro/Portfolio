@@ -151,24 +151,21 @@ window.addEventListener('load', () => { fadeInSections(); });
 document.querySelectorAll('a[data-scroll]').forEach(link => {
     link.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
-        if (href && href.startsWith('#')) {
-            const id = href.slice(1);
-            const target = document.getElementById(id);
-            if (target) {
-                e.preventDefault();
-                this.blur();
-                if (history.replaceState) {
-                    history.replaceState(null, null, window.location.pathname);
-                }
-                const navHeight = document.querySelector('.navbar-height')?.offsetHeight || 0;
-                setTimeout(() => {
-                    const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
-                    window.scrollTo({ top, behavior: 'smooth' });
-                }, 0);
-            }
+        let target;
+        if (href === "#") {
+            target = document.body; // scroll to top
+        } else if (href && href.startsWith('#')) {
+            target = document.getElementById(href.slice(1));
+        }
+        if (target) {
+            e.preventDefault();
+            const navHeight = document.querySelector('.navbar-height')?.offsetHeight || 0;
+            const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
+            window.scrollTo({ top, behavior: 'smooth' });
         }
     });
 });
+
 
 // --- SPACESHIP NAVIGATION ---
 const navSections = [
