@@ -1,7 +1,39 @@
-// Always start at top on reload
-window.scrollTo(0, 0);
+// Aggressive scroll to top for mobile - must be first
+(function() {
+    // Immediate scroll reset
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // Additional mobile-specific fixes
+    if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        // Force scroll reset for mobile browsers
+        history.scrollRestoration = 'manual';
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        }, 0);
+    }
+})();
+
+// Enhanced beforeunload handler
 window.addEventListener('beforeunload', function () {
     window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+});
+
+// Additional page show handler for mobile back/forward navigation
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        // Page was loaded from cache (mobile back button)
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        }, 0);
+    }
 });
 
 // --- STARFIELD ---
@@ -106,6 +138,13 @@ function animateStars() {
 }
 window.addEventListener('resize', ()=>{ setCanvasSize(); initStars(); });
 window.addEventListener('load', ()=>{
+    // Ensure we're at top even after load
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    }, 0);
+    
     initStars();
     animateStars();
     fadeInSections();
@@ -164,100 +203,4 @@ document.querySelectorAll('a[data-scroll]').forEach(link => {
             window.scrollTo({ top, behavior: 'smooth' });
         }
     });
-});
-
-
-// --- SPACESHIP NAVIGATION ---
-const navSections = [
-  { id: 'hero', navId: 'nav-hero' }, // Added hero as first section
-  { id: 'about', navId: 'nav-about' },
-  { id: 'work', navId: 'nav-work' },
-  { id: 'contact', navId: 'nav-contact' },
-];
-// ...all your previous code above remains...
-
-window.addEventListener('DOMContentLoaded', () => {
-    const spaceship = document.getElementById('spaceship');
-    const spaceshipTrack = document.getElementById('spaceship-track');
-    const navbar = document.getElementById('navbar');
-
-    const navSections = [
-        { id: 'hero', navId: 'nav-hero' },
-        { id: 'about', navId: 'nav-about' },
-        { id: 'work', navId: 'nav-work' },
-        { id: 'contact', navId: 'nav-contact' }
-    ];
-    const navLinks = navSections.map(ns => document.getElementById(ns.navId));
-    const sections = navSections.map(ns => document.getElementById(ns.id));
-
-    // Get X coordinate, centered under nav link
-    function navLinkCenterX(link) {
-        const navRect = navbar.getBoundingClientRect();
-        const linkRect = link.getBoundingClientRect();
-        const shipWidth = spaceship.width || 48;
-        return linkRect.left + linkRect.width/2 - navRect.left - shipWidth/2;
-    }
-
-    // Find which section is active (top of viewport)
-    function getActiveSectionIdx() {
-        // The last section whose top is at or above nav height
-        const navHeight = document.querySelector('.navbar-height')?.offsetHeight || 0;
-        let active = 0;
-        for (let i = 0; i < sections.length; i++) {
-            const rect = sections[i].getBoundingClientRect();
-            if (rect.top - navHeight <= 1) {
-                active = i;
-            }
-        }
-        return active;
-    }
-
-    // Get percentage scroll between two sections
-    function sectionScrollProgress(idxA, idxB) {
-        const navHeight = document.querySelector('.navbar-height')?.offsetHeight || 0;
-        const a = sections[idxA];
-        const b = sections[idxB];
-        const aTop = a.getBoundingClientRect().top - navHeight + window.scrollY;
-        const bTop = b.getBoundingClientRect().top - navHeight + window.scrollY;
-        const scrollY = window.scrollY;
-        return (scrollY - aTop) / (bTop - aTop);
-    }
-
-    function updateSpaceship() {
-        const idx = getActiveSectionIdx();
-        // If at or below last section, snap to last nav link
-        if (idx === sections.length - 1 || window.scrollY + window.innerHeight >= document.body.scrollHeight) {
-            spaceship.style.left = `${navLinkCenterX(navLinks[navLinks.length - 1])}px`;
-            return;
-        }
-        // If at top, snap to first nav link
-        if (window.scrollY <= sections[0].offsetTop) {
-            spaceship.style.left = `${navLinkCenterX(navLinks[0])}px`;
-            return;
-        }
-        // If inside a section, snap to that nav link
-        const rect = sections[idx].getBoundingClientRect();
-        const navHeight = document.querySelector('.navbar-height')?.offsetHeight || 0;
-        if (rect.top - navHeight <= 2 && rect.bottom - navHeight > 2) {
-            spaceship.style.left = `${navLinkCenterX(navLinks[idx])}px`;
-            return;
-        }
-        // Otherwise, interpolate between nav links
-        const progress = sectionScrollProgress(idx, idx + 1);
-        const xA = navLinkCenterX(navLinks[idx]);
-        const xB = navLinkCenterX(navLinks[idx+1]);
-        spaceship.style.left = `${xA + (xB - xA) * progress}px`;
-    }
-
-    function resizeSpaceship() {
-        if (!spaceship.complete) {
-            spaceship.onload = () => updateSpaceship();
-        } else {
-            updateSpaceship();
-        }
-    }
-
-    window.addEventListener('resize', resizeSpaceship);
-    window.addEventListener('scroll', updateSpaceship, { passive: true });
-    resizeSpaceship();
 });
