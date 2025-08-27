@@ -264,20 +264,3 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', updateSpaceship, { passive: true });
     resizeSpaceship();
 });
-
-// --- MOBILE HAMBURGER MENU ---
-const hamburger = document.getElementById('hamburger');
-const mobileMenu = document.getElementById('mobile-menu');
-
-if (hamburger && mobileMenu) {
-    hamburger.addEventListener('click', () => {
-        const isOpen = mobileMenu.classList.contains('opacity-100');
-        if (isOpen) {
-            mobileMenu.classList.remove('opacity-100');
-            mobileMenu.classList.add('opacity-0', 'pointer-events-none');
-        } else {
-            mobileMenu.classList.remove('opacity-0', 'pointer-events-none');
-            mobileMenu.classList.add('opacity-100');
-        }
-    });
-}
